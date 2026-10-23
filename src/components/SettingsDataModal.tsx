@@ -40,6 +40,16 @@ export const SettingsDataModal: React.FC<SettingsDataModalProps> = ({
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   const checkServerHealth = async () => {
     setHealthLoading(true);
     try {
@@ -100,17 +110,25 @@ export const SettingsDataModal: React.FC<SettingsDataModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-2xs p-4">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="settings-dialog-title"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-2xs p-4"
+    >
       <div className="bg-[#fbf9f5] border border-[#e7e1d7] rounded-xl shadow-xl max-w-lg w-full p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[#e7e1d7] pb-3">
           <div>
-            <h2 className="text-base font-bold text-[#142d22]">Settings & Data Management</h2>
+            <h2 id="settings-dialog-title" className="text-base font-bold text-[#142d22]">
+              Settings & Data Management
+            </h2>
             <p className="text-xs text-[#716859]">Data persistence, backup exports, and engine status</p>
           </div>
           <button
             onClick={onClose}
-            className="p-1 text-[#716859] hover:text-[#142d22] rounded-md hover:bg-[#ede7dd]"
+            aria-label="Close settings dialog"
+            className="p-1 text-[#716859] hover:text-[#142d22] rounded-md hover:bg-[#ede7dd] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#1b4332]"
           >
             <X className="w-4 h-4" />
           </button>

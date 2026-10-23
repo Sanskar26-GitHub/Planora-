@@ -44,6 +44,16 @@ export const AiAssistant: React.FC<AiAssistantProps> = ({ eventData, onRefresh }
     scrollToBottom();
   }, [chatHistory, isLoading]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selectedProposal) {
+        setSelectedProposal(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedProposal]);
+
   const handleSendMessage = async (customPrompt?: string) => {
     const textToSend = customPrompt || inputText;
     if (!textToSend.trim() || isLoading) return;
@@ -323,12 +333,19 @@ export const AiAssistant: React.FC<AiAssistantProps> = ({ eventData, onRefresh }
 
       {/* PROPOSAL CONFIRMATION MODAL */}
       {selectedProposal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-2xs p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="proposal-modal-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-2xs p-4"
+        >
           <div className="bg-[#fbf9f5] border border-[#e7e1d7] rounded-xl shadow-xl max-w-lg w-full p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-[#e7e1d7] pb-3">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-[#d97706]" />
-                <h3 className="text-base font-bold text-[#142d22]">Review Proposed Plan Changes</h3>
+                <h3 id="proposal-modal-title" className="text-base font-bold text-[#142d22]">
+                  Review Proposed Plan Changes
+                </h3>
               </div>
               <button
                 onClick={() => setSelectedProposal(null)}

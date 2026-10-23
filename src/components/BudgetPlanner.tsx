@@ -54,6 +54,17 @@ export const BudgetPlanner: React.FC<BudgetPlannerProps> = ({ eventData, onRefre
     0
   );
 
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (showAddExpenseModal) setShowAddExpenseModal(false);
+        if (showCategoryModal) setShowCategoryModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showAddExpenseModal, showCategoryModal]);
+
   const handleOpenAddExpense = () => {
     setExpenseForm({
       title: '',
@@ -422,15 +433,21 @@ export const BudgetPlanner: React.FC<BudgetPlannerProps> = ({ eventData, onRefre
 
       {/* MODAL: ADD / EDIT EXPENSE */}
       {showAddExpenseModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-2xs p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="expense-modal-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-2xs p-4"
+        >
           <div className="bg-[#fbf9f5] border border-[#e7e1d7] rounded-xl shadow-xl max-w-md w-full p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-[#e7e1d7] pb-3">
-              <h3 className="text-base font-bold text-[#142d22]">
+              <h3 id="expense-modal-title" className="text-base font-bold text-[#142d22]">
                 {editingExpense ? 'Edit Expense Record' : 'Record New Expense'}
               </h3>
               <button
                 onClick={() => setShowAddExpenseModal(false)}
-                className="text-xs text-[#716859] hover:text-[#142d22]"
+                aria-label="Close expense modal"
+                className="text-xs text-[#716859] hover:text-[#142d22] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#1b4332]"
               >
                 Cancel
               </button>
@@ -596,18 +613,26 @@ export const BudgetPlanner: React.FC<BudgetPlannerProps> = ({ eventData, onRefre
 
       {/* MODAL: EDIT CATEGORY ALLOCATIONS */}
       {showCategoryModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-2xs p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="category-allocations-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-2xs p-4"
+        >
           <div className="bg-[#fbf9f5] border border-[#e7e1d7] rounded-xl shadow-xl max-w-lg w-full p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-[#e7e1d7] pb-3">
               <div>
-                <h3 className="text-base font-bold text-[#142d22]">Edit Budget Allocations</h3>
+                <h3 id="category-allocations-title" className="text-base font-bold text-[#142d22]">
+                  Edit Budget Allocations
+                </h3>
                 <p className="text-xs text-[#716859]">
                   Total Budget: {formatCurrency(event.totalBudget, event.currency)}
                 </p>
               </div>
               <button
                 onClick={() => setShowCategoryModal(false)}
-                className="text-xs text-[#716859] hover:text-[#142d22]"
+                aria-label="Close allocations modal"
+                className="text-xs text-[#716859] hover:text-[#142d22] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#1b4332]"
               >
                 Cancel
               </button>

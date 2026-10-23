@@ -10,7 +10,7 @@ import { AiAssistant } from './components/AiAssistant';
 import { EventBriefExport } from './components/EventBriefExport';
 import { SettingsDataModal } from './components/SettingsDataModal';
 import { storage } from './services/storage';
-import { PlanoraEventData } from './types';
+import { PlanoraEventData, EventDetails } from './types';
 
 export default function App() {
   const [events, setEvents] = useState<PlanoraEventData[]>([]);
@@ -55,6 +55,11 @@ export default function App() {
     syncFromStorage();
   };
 
+  const handleEditEvent = (updated: EventDetails) => {
+    storage.updateEventDetails(updated.id, updated);
+    syncFromStorage();
+  };
+
   const handleLoadSampleEvent = () => {
     storage.loadSampleEvent();
     syncFromStorage();
@@ -89,6 +94,7 @@ export default function App() {
             events={events}
             onSelectEvent={handleSelectEvent}
             onCreateNewEvent={handleCreateNewEvent}
+            onEditEvent={handleEditEvent}
             onDeleteEvent={handleDeleteEvent}
             onLoadSampleEvent={handleLoadSampleEvent}
           />
@@ -97,6 +103,7 @@ export default function App() {
             events={events}
             onSelectEvent={handleSelectEvent}
             onCreateNewEvent={handleCreateNewEvent}
+            onEditEvent={handleEditEvent}
             onDeleteEvent={handleDeleteEvent}
             onLoadSampleEvent={handleLoadSampleEvent}
           />
@@ -107,6 +114,7 @@ export default function App() {
                 eventData={activeEvent}
                 setActiveTab={setActiveTab}
                 onRefresh={syncFromStorage}
+                onEditEvent={handleEditEvent}
               />
             )}
 

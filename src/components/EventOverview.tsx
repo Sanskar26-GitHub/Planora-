@@ -13,8 +13,9 @@ import {
   FileText,
   Loader2,
   RefreshCw,
+  Edit2,
 } from 'lucide-react';
-import { PlanoraEventData } from '../types';
+import { PlanoraEventData, EventDetails } from '../types';
 import {
   calculateBudgetSummary,
   calculateDaysRemaining,
@@ -24,21 +25,25 @@ import {
 } from '../utils/calculations';
 import { requestAiPlan } from '../services/aiClient';
 import { storage } from '../services/storage';
+import { EditEventModal } from './EditEventModal';
 
 interface EventOverviewProps {
   eventData: PlanoraEventData;
   setActiveTab: (tab: string) => void;
   onRefresh: () => void;
+  onEditEvent: (updated: EventDetails) => void;
 }
 
 export const EventOverview: React.FC<EventOverviewProps> = ({
   eventData,
   setActiveTab,
   onRefresh,
+  onEditEvent,
 }) => {
   const { event, categories, expenses, tasks, vendors, aiPlan } = eventData;
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   const daysRemaining = calculateDaysRemaining(event.date);
   const budgetStats = calculateBudgetSummary(event.totalBudget, categories, expenses);
@@ -113,6 +118,13 @@ export const EventOverview: React.FC<EventOverviewProps> = ({
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>Ask AI</span>
+            </button>
+            <button
+              onClick={() => setIsEditing(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-[#f2eee6] text-[#1b4332] border border-[#dcd4c7] hover:bg-[#ede7dd] rounded-md transition-colors"
+            >
+              <Edit2 className="w-3.5 h-3.5" />
+              <span>Edit Details</span>
             </button>
           </div>
         </div>
@@ -384,6 +396,17 @@ export const EventOverview: React.FC<EventOverviewProps> = ({
           </div>
         )}
       </div>
+
+      {/* Edit Event Modal */}
+      <EditEventModal
+        isOpen={isEditing}
+        event={event}
+        onClose={() => setIsEditing(false)}
+        onSave={(updated) => {
+          onEditEvent(updated);
+          setIsEditing(false);
+        }}
+      />
     </div>
   );
 };

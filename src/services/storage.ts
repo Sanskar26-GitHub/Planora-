@@ -97,10 +97,11 @@ class StorageService {
 
   public saveEvent(eventData: PlanoraEventData): void {
     const state = this.loadState();
-    eventData.event.updatedAt = new Date().toISOString();
-    state.events[eventData.event.id] = eventData;
+    const cloned = JSON.parse(JSON.stringify(eventData));
+    cloned.event.updatedAt = new Date().toISOString();
+    state.events[cloned.event.id] = cloned;
     if (!state.activeEventId) {
-      state.activeEventId = eventData.event.id;
+      state.activeEventId = cloned.event.id;
     }
     this.saveState(state);
   }
@@ -344,6 +345,10 @@ class StorageService {
 
     if (proposal.status === 'applied') {
       return { success: false, message: 'This proposal has already been applied.' };
+    }
+
+    if (proposal.status === 'dismissed') {
+      return { success: false, message: 'This proposal was dismissed.' };
     }
 
     // Apply each planned change deterministically

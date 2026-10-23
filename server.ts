@@ -7,9 +7,35 @@ import { GoogleGenAI, Type } from '@google/genai';
 dotenv.config();
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 app.use(express.json({ limit: '2mb' }));
+
+// Simple in-memory rate limiter for server protection (max 30 requests per minute per IP)
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+  if (!entry || now > entry.resetTime) {
+    rateLimitMap.set(ip, { count: 1, resetTime: now + 60000 });
+    return true;
+  }
+  if (entry.count >= 30) {
+    return false;
+  }
+  entry.count++;
+  return true;
+}
+
+// Timeout wrapper for Gemini API requests
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 75000): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error('AI request timed out.')), timeoutMs)
+    ),
+  ]);
+}
 
 // Initialize official @google/genai SDK on server side with required aistudio-build telemetry header
 const ai = new GoogleGenAI({
@@ -37,6 +63,12 @@ app.get('/api/health', (req: Request, res: Response) => {
  */
 app.post('/api/ai/generate-plan', async (req: Request, res: Response): Promise<void> => {
   try {
+    const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
+    if (!checkRateLimit(clientIp)) {
+      res.status(429).json({ error: 'Too many requests. Please wait a moment before generating another plan.' });
+      return;
+    }
+
     const { event } = req.body;
 
     if (!event || typeof event !== 'object') {
@@ -46,6 +78,11 @@ app.post('/api/ai/generate-plan', async (req: Request, res: Response): Promise<v
 
     if (!event.name || !event.type || !event.date || !event.totalBudget) {
       res.status(400).json({ error: 'Event must have name, type, date, and totalBudget.' });
+      return;
+    }
+
+    if (typeof event.name === 'string' && event.name.length > 120) {
+      res.status(400).json({ error: 'Event name cannot exceed 120 characters.' });
       return;
     }
 
@@ -83,8 +120,8 @@ Dietary & Accessibility: ${event.dietaryAccessibility || 'Standard accommodation
 Additional Notes: ${event.additionalNotes || 'None'}
 Specific Customizations: ${JSON.stringify(event.specificDetails || {})}`;
 
-    // Schema enforcement using official @google/genai Type enum
-    const response = await ai.models.generateContent({
+    // Schema enforcement using official @google/genai Type enum with timeout
+    const response = await withTimeout(ai.models.generateContent({
       model: 'gemini-3.8-flash',
       contents: userPrompt,
       config: {
@@ -198,7 +235,7 @@ Specific Customizations: ${JSON.stringify(event.specificDetails || {})}`;
           ],
         },
       },
-    });
+    }), 75000);
 
     const responseText = response.text;
     if (!responseText) {
@@ -227,10 +264,21 @@ Specific Customizations: ${JSON.stringify(event.specificDetails || {})}`;
  */
 app.post('/api/ai/chat', async (req: Request, res: Response): Promise<void> => {
   try {
+    const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
+    if (!checkRateLimit(clientIp)) {
+      res.status(429).json({ error: 'Too many requests. Please wait a moment before sending another message.' });
+      return;
+    }
+
     const { eventData, userMessage, chatHistory } = req.body;
 
     if (!userMessage || typeof userMessage !== 'string' || userMessage.trim().length === 0) {
       res.status(400).json({ error: 'Message cannot be empty.' });
+      return;
+    }
+
+    if (userMessage.length > 2500) {
+      res.status(400).json({ error: 'Message cannot exceed 2500 characters.' });
       return;
     }
 
@@ -291,7 +339,7 @@ ${userMessage}
 
 Respond with structured JSON following the schema.`;
 
-    const response = await ai.models.generateContent({
+    const response = await withTimeout(ai.models.generateContent({
       model: 'gemini-3.8-flash',
       contents: fullPrompt,
       config: {
@@ -352,7 +400,7 @@ Respond with structured JSON following the schema.`;
           required: ['reply', 'hasProposal'],
         },
       },
-    });
+    }), 75000);
 
     const responseText = response.text;
     if (!responseText) {

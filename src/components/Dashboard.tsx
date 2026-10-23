@@ -12,15 +12,18 @@ import {
   Heart,
   PartyPopper,
   Compass,
+  Edit2,
 } from 'lucide-react';
-import { PlanoraEventData, EventType } from '../types';
+import { PlanoraEventData, EventType, EventDetails } from '../types';
 import { calculateBudgetSummary, calculateDaysRemaining, calculateTaskSummary, formatCurrency } from '../utils/calculations';
 import { IMAGES } from '../constants/assets';
+import { EditEventModal } from './EditEventModal';
 
 interface DashboardProps {
   events: PlanoraEventData[];
   onSelectEvent: (eventId: string, targetTab?: string) => void;
   onCreateNewEvent: () => void;
+  onEditEvent: (updated: EventDetails) => void;
   onDeleteEvent: (eventId: string) => void;
   onLoadSampleEvent: () => void;
 }
@@ -29,11 +32,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
   events,
   onSelectEvent,
   onCreateNewEvent,
+  onEditEvent,
   onDeleteEvent,
   onLoadSampleEvent,
 }) => {
   const [filterType, setFilterType] = useState<string>('all');
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [editingEvent, setEditingEvent] = useState<EventDetails | null>(null);
 
   // Compute aggregate stats across all events
   const totalBudgetCombined = events.reduce((acc, e) => acc + (e.event.totalBudget || 0), 0);
@@ -376,6 +381,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         <ArrowRight className="w-3.5 h-3.5" />
                       </button>
 
+                      <button
+                        onClick={() => setEditingEvent(event)}
+                        title="Edit Event Details"
+                        aria-label={`Edit details for ${event.name}`}
+                        className="p-2 text-[#716859] hover:text-[#1b4332] hover:bg-[#ede7dd] rounded-md transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#1b4332]"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+
                       {deleteConfirmId === event.id ? (
                         <div className="flex items-center gap-1">
                           <button
@@ -399,7 +413,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                           onClick={() => setDeleteConfirmId(event.id)}
                           title="Delete Event"
                           aria-label={`Delete event ${event.name}`}
-                          className="p-2 text-[#8c8273] hover:text-[#c86d51] hover:bg-[#ede7dd] rounded-md transition-colors"
+                          className="p-2 text-[#8c8273] hover:text-[#c86d51] hover:bg-[#ede7dd] rounded-md transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#c86d51]"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -412,6 +426,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
         )}
       </section>
+
+      {/* Edit Event Modal */}
+      <EditEventModal
+        isOpen={Boolean(editingEvent)}
+        event={editingEvent}
+        onClose={() => setEditingEvent(null)}
+        onSave={(updated) => {
+          onEditEvent(updated);
+          setEditingEvent(null);
+        }}
+      />
     </div>
   );
 };

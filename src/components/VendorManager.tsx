@@ -51,6 +51,16 @@ export const VendorManager: React.FC<VendorManagerProps> = ({ eventData, onRefre
   });
   const [vendorErrors, setVendorErrors] = useState<Record<string, string>>({});
 
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showVendorModal) {
+        setShowVendorModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showVendorModal]);
+
   const handleOpenAddVendor = () => {
     setEditingVendor(null);
     setVendorForm({
@@ -395,10 +405,15 @@ export const VendorManager: React.FC<VendorManagerProps> = ({ eventData, onRefre
 
       {/* MODAL: ADD / EDIT VENDOR */}
       {showVendorModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-2xs p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="vendor-modal-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-2xs p-4"
+        >
           <div className="bg-[#fbf9f5] border border-[#e7e1d7] rounded-xl shadow-xl max-w-md w-full p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-[#e7e1d7] pb-3">
-              <h3 className="text-base font-bold text-[#142d22]">
+              <h3 id="vendor-modal-title" className="text-base font-bold text-[#142d22]">
                 {editingVendor ? 'Edit Vendor Record' : 'Record New Vendor'}
               </h3>
               <button
