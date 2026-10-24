@@ -10,11 +10,13 @@ import {
   PartyPopper,
   Compass,
 } from 'lucide-react';
-import { EventDetails, EventType, PlanoraEventData } from '../types';
+import { EventDetails, EventType, PlanoraEventData, Priority, TaskItem } from '../types';
 import { validateEventInput } from '../utils/validation';
 import { createInitialCategories } from '../constants/initialData';
 import { requestAiPlan } from '../services/aiClient';
 import { formatCurrency, getLocalTodayString } from '../utils/calculations';
+import { getEventImage } from '../constants/assets';
+import { SafeImage } from './SafeImage';
 
 interface CreateEventWizardProps {
   onEventCreated: (eventData: PlanoraEventData) => void;
@@ -188,7 +190,7 @@ export const CreateEventWizard: React.FC<CreateEventWizardProps> = ({
     }
 
     // Build initial task list from AI milestones or defaults
-    const initialTasks = [];
+    const initialTasks: TaskItem[] = [];
     if (aiPlanResult && Array.isArray(aiPlanResult.milestones)) {
       for (const m of aiPlanResult.milestones) {
         if (Array.isArray(m.tasks)) {
@@ -198,7 +200,9 @@ export const CreateEventWizard: React.FC<CreateEventWizardProps> = ({
               title: t.title,
               category: t.category || 'General',
               dueDate: m.dueDate || newEvent.date,
-              priority: (t.priority as any) || 'medium',
+              priority: (t.priority === 'urgent' || t.priority === 'high' || t.priority === 'low')
+                ? t.priority
+                : 'medium',
               status: 'pending' as const,
               dependencies: [],
               createdAt: new Date().toISOString(),
@@ -687,12 +691,33 @@ export const CreateEventWizard: React.FC<CreateEventWizardProps> = ({
           <div className="space-y-6">
             <h2 className="text-base font-bold text-[#142d22]">4. Review & Launch Plan</h2>
 
-            {/* Summary Card */}
-            <div className="bg-[#f2ece2] border border-[#dcd4c7] rounded-xl p-4 sm:p-5 space-y-3 text-xs">
-              <div className="flex items-center justify-between border-b border-[#e1d8cb] pb-2">
-                <span className="font-bold text-[#142d22] text-sm">{formData.name}</span>
-                <span className="capitalize font-medium text-[#1b4332]">{formData.type}</span>
+            {/* Summary Card with Showcase Cover Preview */}
+            <div className="bg-[#f2ece2] border border-[#dcd4c7] rounded-xl overflow-hidden text-xs">
+              <div className="relative h-28 w-full overflow-hidden bg-[#e9e3d8]">
+                <SafeImage
+                  src={getEventImage(formData.type || 'wedding')}
+                  alt={`${formData.name || 'Event'} preview`}
+                  className="w-full h-full object-cover"
+                  containerClassName="w-full h-full"
+                  fallback={
+                    <div
+                      className="w-full h-full bg-linear-to-br from-[#1b4332] via-[#2d6a4f] to-[#40916c]"
+                      role="img"
+                      aria-label="Event visual preview"
+                    />
+                  }
+                />
+                <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute bottom-2 left-3 right-3 text-white font-bold text-sm truncate drop-shadow-xs">
+                  {formData.name || 'New Event'}
+                </div>
               </div>
+
+              <div className="p-4 sm:p-5 space-y-3">
+                <div className="flex items-center justify-between border-b border-[#e1d8cb] pb-2">
+                  <span className="font-semibold text-[#142d22]">Event Specifications</span>
+                  <span className="capitalize font-medium text-[#1b4332]">{formData.type}</span>
+                </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-[#4a4237]">
                 <div>
@@ -721,6 +746,7 @@ export const CreateEventWizard: React.FC<CreateEventWizardProps> = ({
                   <span className="text-[#2c261e]">{formData.stylePreferences}</span>
                 </div>
               )}
+              </div>
             </div>
 
             {generationError && (

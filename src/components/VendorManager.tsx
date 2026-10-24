@@ -1,22 +1,16 @@
 import React, { useState } from 'react';
 import {
-  Users,
   Plus,
   Search,
   Filter,
   Phone,
   Mail,
-  DollarSign,
   Edit2,
   Trash2,
   Sparkles,
-  CheckCircle2,
-  Clock,
-  XCircle,
-  FileText,
 } from 'lucide-react';
 import { VendorItem, PlanoraEventData, VendorBookingStatus, VendorPaymentStatus } from '../types';
-import { calculateVendorSummary, formatCurrency, roundCurrency } from '../utils/calculations';
+import { calculateVendorSummary, formatCurrency } from '../utils/calculations';
 import { validateVendorInput } from '../utils/validation';
 import { storage } from '../services/storage';
 
@@ -299,24 +293,34 @@ export const VendorManager: React.FC<VendorManagerProps> = ({ eventData, onRefre
             >
               <div className="space-y-2">
                 <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <h3 className="font-bold text-[#142d22] text-sm truncate">{v.name}</h3>
-                    <div className="text-[11px] text-[#716859] flex items-center gap-1.5">
-                      <span>{v.category}</span>
-                      {v.isAiSuggested && (
-                        <>
-                          <span aria-hidden="true">·</span>
-                          <span className="text-[#d97706] font-medium flex items-center gap-0.5">
-                            <Sparkles className="w-3 h-3" />
-                            <span>AI Suggestion</span>
-                          </span>
-                        </>
-                      )}
+                  <div className="flex items-center gap-3 min-w-0">
+                    {/* Consistent Neutral Vendor Placeholder Avatar */}
+                    <div
+                      className="w-10 h-10 rounded-lg bg-[#ede7dd] border border-[#dcd4c7] flex items-center justify-center text-[#1b4332] font-semibold text-xs shrink-0 select-none shadow-2xs"
+                      aria-label={`${v.name} vendor logo placeholder`}
+                      role="img"
+                    >
+                      {v.name.slice(0, 2).toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-[#142d22] text-sm truncate">{v.name}</h3>
+                      <div className="text-[11px] text-[#716859] flex items-center gap-1.5 truncate">
+                        <span className="truncate">{v.category}</span>
+                        {v.isAiSuggested && (
+                          <>
+                            <span aria-hidden="true">·</span>
+                            <span className="text-[#d97706] font-medium flex items-center gap-0.5 shrink-0">
+                              <Sparkles className="w-3 h-3" />
+                              <span>AI Suggestion</span>
+                            </span>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
 
                   <span
-                    className={`px-2 py-0.5 rounded-sm font-semibold uppercase text-[10px] border ${getStatusBadge(
+                    className={`px-2 py-0.5 rounded-sm font-semibold uppercase text-[10px] border shrink-0 ${getStatusBadge(
                       v.bookingStatus
                     )}`}
                   >

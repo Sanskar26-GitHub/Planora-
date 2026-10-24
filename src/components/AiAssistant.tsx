@@ -4,19 +4,15 @@ import {
   Send,
   Loader2,
   CheckCircle2,
-  XCircle,
   AlertCircle,
-  HelpCircle,
-  ArrowRight,
   Shield,
-  Layers,
-  Calendar,
-  DollarSign,
 } from 'lucide-react';
 import { PlanoraEventData, ChatMessage, PlanProposal } from '../types';
 import { sendChatMessage } from '../services/aiClient';
 import { storage } from '../services/storage';
 import { formatCurrency } from '../utils/calculations';
+import { IMAGES } from '../constants/assets';
+import { SafeAvatar } from './SafeAvatar';
 
 interface AiAssistantProps {
   eventData: PlanoraEventData;
@@ -197,7 +193,20 @@ export const AiAssistant: React.FC<AiAssistantProps> = ({ eventData, onRefresh }
               key={msg.id}
               className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} space-y-1.5`}
             >
-              <div className="flex items-center gap-2 text-[10px] text-[#8c8273] px-1">
+              <div className="flex items-center gap-1.5 text-[10px] text-[#8c8273] px-1">
+                {isUser ? (
+                  <SafeAvatar
+                    src={IMAGES.avatarPlanner}
+                    alt="You"
+                    initials="PL"
+                    sizeClassName="w-4 h-4"
+                    className="text-[8px]"
+                  />
+                ) : (
+                  <div className="w-4 h-4 rounded-full bg-[#1b4332] text-white flex items-center justify-center shrink-0" aria-hidden="true">
+                    <Sparkles className="w-2.5 h-2.5 text-[#d8c29d]" />
+                  </div>
+                )}
                 <span>{isUser ? 'You' : 'Planora AI'}</span>
                 <span aria-hidden="true">·</span>
                 <span>{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>

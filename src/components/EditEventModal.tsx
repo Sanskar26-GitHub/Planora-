@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, AlertCircle } from 'lucide-react';
 import { EventDetails } from '../types';
 import { validateEventInput } from '../utils/validation';
-import { formatCurrency, getLocalTodayString } from '../utils/calculations';
+import { getLocalTodayString } from '../utils/calculations';
 
 interface EditEventModalProps {
   isOpen: boolean;

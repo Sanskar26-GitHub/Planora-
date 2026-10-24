@@ -7,10 +7,8 @@ import {
   AlertTriangle,
   Sparkles,
   Users,
-  ArrowRight,
   ShieldAlert,
   Lightbulb,
-  FileText,
   Loader2,
   RefreshCw,
   Edit2,
@@ -26,6 +24,8 @@ import {
 import { requestAiPlan } from '../services/aiClient';
 import { storage } from '../services/storage';
 import { EditEventModal } from './EditEventModal';
+import { getEventImage } from '../constants/assets';
+import { SafeImage } from './SafeImage';
 
 interface EventOverviewProps {
   eventData: PlanoraEventData;
@@ -61,8 +61,8 @@ export const EventOverview: React.FC<EventOverviewProps> = ({
       } else {
         setAiError(result.message || 'Failed to generate AI plan. Please check server settings.');
       }
-    } catch (err: any) {
-      setAiError(err?.message || 'Error communicating with Gemini service.');
+    } catch (err: unknown) {
+      setAiError(err instanceof Error ? err.message : 'Error communicating with Gemini service.');
     } finally {
       setIsGeneratingAi(false);
     }
@@ -70,9 +70,36 @@ export const EventOverview: React.FC<EventOverviewProps> = ({
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Event Header Banner */}
-      <div className="bg-[#fbf9f5] border border-[#e7e1d7] rounded-2xl p-6 sm:p-8 shadow-2xs">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Event Header Banner with Cover */}
+      <div className="bg-[#fbf9f5] border border-[#e7e1d7] rounded-2xl overflow-hidden shadow-2xs">
+        {/* Event Cover Image */}
+        <div className="relative h-32 sm:h-44 w-full overflow-hidden bg-[#e9e3d8]">
+          <SafeImage
+            src={getEventImage(event.type)}
+            alt={`${event.name} cover`}
+            className="w-full h-full object-cover"
+            containerClassName="w-full h-full"
+            fallback={
+              <div
+                className={`w-full h-full ${
+                  event.type === 'wedding'
+                    ? 'bg-linear-to-br from-[#1b4332] via-[#2d6a4f] to-[#b08968]'
+                    : event.type === 'birthday'
+                    ? 'bg-linear-to-br from-[#2d6a4f] via-[#40916c] to-[#c86d51]'
+                    : 'bg-linear-to-br from-[#1b4332] via-[#40916c] to-[#d97706]'
+                }`}
+                role="img"
+                aria-label={`${event.name} cover`}
+              >
+                <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
+              </div>
+            }
+          />
+          <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+        </div>
+
+        <div className="p-6 sm:p-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2 text-xs text-[#716859]">
               <span className="capitalize font-semibold text-[#1b4332]">{event.type}</span>
@@ -128,6 +155,7 @@ export const EventOverview: React.FC<EventOverviewProps> = ({
             </button>
           </div>
         </div>
+      </div>
       </div>
 
       {/* Critical Overdue Tasks Banner (if any) */}

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { PlanoraEventData } from '../types';
 import { IMAGES } from '../constants/assets';
+import { SafeAvatar } from './SafeAvatar';
 
 interface NavbarProps {
   activeTab: string;
@@ -185,11 +186,11 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* User Avatar */}
             <div className="hidden lg:flex items-center pl-1 border-l border-[#e7e1d7]">
-              <img
+              <SafeAvatar
                 src={IMAGES.avatarPlanner}
                 alt="Planner profile"
-                referrerPolicy="no-referrer"
-                className="w-7 h-7 rounded-full object-cover border border-[#c8beaf]"
+                initials="PL"
+                sizeClassName="w-7 h-7"
               />
             </div>
           </div>

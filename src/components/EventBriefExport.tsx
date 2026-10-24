@@ -1,16 +1,16 @@
 import React from 'react';
 import {
   Printer,
-  Calendar,
   DollarSign,
   Users,
   CheckSquare,
   ShieldAlert,
-  Sparkles,
   FileText,
 } from 'lucide-react';
 import { PlanoraEventData } from '../types';
 import { calculateBudgetSummary, calculateTaskSummary, formatCurrency } from '../utils/calculations';
+import { getEventImage } from '../constants/assets';
+import { SafeImage } from './SafeImage';
 
 interface EventBriefExportProps {
   eventData: PlanoraEventData;
@@ -56,13 +56,28 @@ export const EventBriefExport: React.FC<EventBriefExportProps> = ({ eventData })
       <div className="bg-white border border-[#e7e1d7] rounded-xl p-8 sm:p-12 shadow-sm print:border-none print:shadow-none print:p-0 max-w-4xl mx-auto space-y-8 text-[#1f2937]">
         {/* Document Header */}
         <div className="border-b-2 border-[#1b4332] pb-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-          <div className="space-y-1">
-            <div className="text-xs uppercase tracking-widest font-bold text-[#1b4332]">
-              Planora · Master Event Brief
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-lg overflow-hidden border border-[#e5e7eb] shrink-0 print:hidden bg-[#f3f4f6]">
+              <SafeImage
+                src={getEventImage(event.type)}
+                alt={`${event.name} thumbnail`}
+                className="w-full h-full object-cover"
+                containerClassName="w-full h-full"
+                fallback={
+                  <div className="w-full h-full bg-[#1b4332] flex items-center justify-center text-white text-xs font-bold">
+                    {event.name.slice(0, 2).toUpperCase()}
+                  </div>
+                }
+              />
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#111827]">{event.name}</h2>
-            <div className="text-xs text-[#6b7280]">
-              {event.location} · {event.date} {event.endDate ? `to ${event.endDate}` : ''}
+            <div className="space-y-1">
+              <div className="text-xs uppercase tracking-widest font-bold text-[#1b4332]">
+                Planora · Master Event Brief
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#111827]">{event.name}</h2>
+              <div className="text-xs text-[#6b7280]">
+                {event.location} · {event.date} {event.endDate ? `to ${event.endDate}` : ''}
+              </div>
             </div>
           </div>
 

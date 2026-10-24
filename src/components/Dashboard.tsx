@@ -16,8 +16,9 @@ import {
 } from 'lucide-react';
 import { PlanoraEventData, EventType, EventDetails } from '../types';
 import { calculateBudgetSummary, calculateDaysRemaining, calculateTaskSummary, formatCurrency } from '../utils/calculations';
-import { IMAGES } from '../constants/assets';
+import { IMAGES, getEventImage } from '../constants/assets';
 import { EditEventModal } from './EditEventModal';
+import { SafeImage } from './SafeImage';
 
 interface DashboardProps {
   events: PlanoraEventData[];
@@ -57,19 +58,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
     return e.event.type === filterType;
   });
 
-  const getEventImage = (type: EventType) => {
-    switch (type) {
-      case 'wedding':
-        return IMAGES.weddingShowcase;
-      case 'birthday':
-        return IMAGES.birthdayShowcase;
-      case 'community':
-        return IMAGES.communityShowcase;
-      default:
-        return IMAGES.heroBanner;
-    }
-  };
-
   const getTypeIcon = (type: EventType) => {
     switch (type) {
       case 'wedding':
@@ -86,11 +74,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {/* Hero Welcome Banner */}
       <section className="relative overflow-hidden rounded-2xl bg-[#1b4332] text-[#faf8f5] shadow-md">
         <div className="absolute inset-0 opacity-25 mix-blend-overlay">
-          <img
+          <SafeImage
             src={IMAGES.heroBanner}
             alt="Planora event decor"
-            referrerPolicy="no-referrer"
+            isDecorative={true}
             className="w-full h-full object-cover"
+            fallback={
+              <div
+                className="w-full h-full bg-linear-to-br from-[#142d22] via-[#2d6a4f] to-[#40916c] opacity-60"
+                aria-hidden="true"
+              />
+            }
           />
         </div>
         <div className="relative px-6 py-8 sm:px-10 sm:py-12 max-w-4xl">
@@ -280,13 +274,28 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 >
                   {/* Card Image Banner */}
                   <div className="relative h-40 overflow-hidden bg-[#e9e3d8]">
-                    <img
+                    <SafeImage
                       src={getEventImage(event.type)}
-                      alt={event.name}
-                      referrerPolicy="no-referrer"
+                      alt={`${event.name} showcase`}
                       className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300"
+                      containerClassName="w-full h-full"
+                      fallback={
+                        <div
+                          className={`w-full h-full flex flex-col justify-end p-4 transition-transform duration-300 group-hover:scale-102 ${
+                            event.type === 'wedding'
+                              ? 'bg-linear-to-br from-[#1b4332] via-[#2d6a4f] to-[#b08968]'
+                              : event.type === 'birthday'
+                              ? 'bg-linear-to-br from-[#2d6a4f] via-[#40916c] to-[#c86d51]'
+                              : 'bg-linear-to-br from-[#1b4332] via-[#40916c] to-[#d97706]'
+                          }`}
+                          role="img"
+                          aria-label={`${event.name} cover`}
+                        >
+                          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:12px_12px]" />
+                        </div>
+                      }
                     />
-                    <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
                     
                     {/* Top overlay metadata (Zero-pill: clean text with separator) */}
                     <div className="absolute top-3 left-3 right-3 flex items-center justify-between text-white text-xs">
