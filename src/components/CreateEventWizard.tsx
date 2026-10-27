@@ -182,7 +182,7 @@ export const CreateEventWizard: React.FC<CreateEventWizardProps> = ({
             response.message || 'AI plan generation encountered an issue. Initializing with default template.'
           );
         }
-      } catch (err: any) {
+      } catch {
         setGenerationError('Failed to generate AI plan. Proceeding with structured template.');
       } finally {
         setAiLoading(false);

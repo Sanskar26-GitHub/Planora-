@@ -166,16 +166,17 @@ export function validateVendorInput(input: Partial<VendorItem>): ValidationResul
 /**
  * Validates full imported JSON backup payload for data integrity.
  */
-export function validateImportPayload(payload: any): { isValid: boolean; message: string; data?: Record<string, PlanoraEventData> } {
+export function validateImportPayload(payload: unknown): { isValid: boolean; message: string; data?: Record<string, PlanoraEventData> } {
   if (!payload || typeof payload !== 'object') {
     return { isValid: false, message: 'Invalid file format: JSON root must be an object.' };
   }
 
-  if (!payload.events || typeof payload.events !== 'object') {
+  const obj = payload as Record<string, unknown>;
+  if (!obj.events || typeof obj.events !== 'object') {
     return { isValid: false, message: 'Missing "events" collection in backup file.' };
   }
 
-  const events = payload.events as Record<string, PlanoraEventData>;
+  const events = obj.events as Record<string, PlanoraEventData>;
   for (const [id, eventData] of Object.entries(events)) {
     if (!eventData || !eventData.event || !eventData.event.id || !eventData.event.name) {
       return { isValid: false, message: `Corrupted event structure for record ID: ${id}` };

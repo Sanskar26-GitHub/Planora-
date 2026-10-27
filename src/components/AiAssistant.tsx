@@ -100,9 +100,13 @@ export const AiAssistant: React.FC<AiAssistantProps> = ({ eventData, onRefresh }
       } else {
         setErrorMsg(res.message || 'Failed to receive assistant response.');
       }
-    } catch (err: any) {
-      if (err.name !== 'AbortError') {
-        setErrorMsg(err?.message || 'Error communicating with assistant.');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        if (err.name !== 'AbortError') {
+          setErrorMsg(err.message);
+        }
+      } else {
+        setErrorMsg('Error communicating with assistant.');
       }
     } finally {
       setIsLoading(false);

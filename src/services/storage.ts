@@ -1,4 +1,15 @@
-import { AppState, PlanoraEventData, EventDetails, ExpenseItem, TaskItem, VendorItem, BudgetCategory, ChatMessage, PlanProposal } from '../types';
+import {
+  AppState,
+  PlanoraEventData,
+  EventDetails,
+  ExpenseItem,
+  TaskItem,
+  VendorItem,
+  BudgetCategory,
+  ChatMessage,
+  PlanProposal,
+  AiPlanRecommendation,
+} from '../types';
 import { SAMPLE_EVENT_DATA } from '../constants/initialData';
 import { validateImportPayload } from '../utils/validation';
 
@@ -174,10 +185,10 @@ class StorageService {
         message: `Successfully imported ${importedCount} event plan(s).`,
         count: importedCount,
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
       return {
         success: false,
-        message: `Failed to parse backup JSON: ${err?.message || 'Invalid syntax'}`,
+        message: `Failed to parse backup JSON: ${err instanceof Error ? err.message : 'Invalid syntax'}`,
       };
     }
   }
@@ -306,7 +317,7 @@ class StorageService {
     this.saveState(state);
   }
 
-  public saveAiPlan(eventId: string, plan: any): void {
+  public saveAiPlan(eventId: string, plan: AiPlanRecommendation): void {
     const state = this.loadState();
     const eventData = state.events[eventId];
     if (!eventData) return;
@@ -403,8 +414,8 @@ class StorageService {
       eventData.event.updatedAt = new Date().toISOString();
       this.saveState(state);
       return { success: true, message: `Successfully applied: ${proposal.summary}` };
-    } catch (err: any) {
-      return { success: false, message: `Failed to apply changes: ${err?.message || 'Unknown error'}` };
+    } catch (err: unknown) {
+      return { success: false, message: `Failed to apply changes: ${err instanceof Error ? err.message : 'Unknown error'}` };
     }
   }
 

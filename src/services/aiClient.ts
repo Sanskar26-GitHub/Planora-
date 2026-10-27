@@ -42,8 +42,9 @@ export async function requestAiPlan(
       success: true,
       plan: data.plan,
     };
-  } catch (err: any) {
-    if (err.name === 'AbortError') {
+  } catch (err: unknown) {
+    const errorObj = err as { name?: string; message?: string } | null | undefined;
+    if (errorObj?.name === 'AbortError') {
       return {
         success: false,
         error: 'Request cancelled',
@@ -53,7 +54,7 @@ export async function requestAiPlan(
     return {
       success: false,
       error: 'Network or server error',
-      message: err?.message || 'Could not connect to Planora AI server.',
+      message: errorObj?.message || 'Could not connect to Planora AI server.',
     };
   }
 }
@@ -92,8 +93,9 @@ export async function sendChatMessage(
       reply: data.reply,
       proposal: data.proposal,
     };
-  } catch (err: any) {
-    if (err.name === 'AbortError') {
+  } catch (err: unknown) {
+    const errorObj = err as { name?: string; message?: string } | null | undefined;
+    if (errorObj?.name === 'AbortError') {
       return {
         success: false,
         error: 'Request cancelled',
@@ -103,7 +105,7 @@ export async function sendChatMessage(
     return {
       success: false,
       error: 'Network or server error',
-      message: err?.message || 'Could not communicate with the assistant server.',
+      message: errorObj?.message || 'Could not communicate with the assistant server.',
     };
   }
 }
